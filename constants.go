@@ -10,8 +10,8 @@ import (
 // the default facility is LOG_KERN.
 type Priority int
 
-const severityMask = 0x07
-const facilityMask = 0xf8
+const SeverityMask = 0x07
+const FacilityMask = 0xf8
 
 const (
 	// Severity.
@@ -59,9 +59,11 @@ const (
 	LOG_LOCAL7
 )
 
+const EmptyString = ""
+
 func validatePriority(p Priority) error {
 	if p < 0 || p > LOG_LOCAL7|LOG_DEBUG {
-		return errors.New("log/syslog: invalid priority")
+		return errors.New("syslog: invalid priority")
 	} else {
 		return nil
 	}

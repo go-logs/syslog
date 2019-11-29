@@ -6,6 +6,8 @@ import (
 	"sync"
 )
 
+const EOL = "\n"
+
 // A Writer is a connection to a syslog server.
 type Writer struct {
 	priority  Priority
@@ -166,7 +168,7 @@ func (w *Writer) Debug(m string) (err error) {
 // writeAndRetry takes a severity and the string to write. Any facility passed to
 // it as part of the severity Priority will be ignored.
 func (w *Writer) writeAndRetry(severity Priority, s string) (int, error) {
-	pr := (w.priority & facilityMask) | (severity & severityMask)
+	pr := (w.priority & FacilityMask) | (severity & SeverityMask)
 
 	return w.writeAndRetryWithPriority(pr, s)
 }
@@ -192,8 +194,8 @@ func (w *Writer) writeAndRetryWithPriority(p Priority, s string) (int, error) {
 // message based on the current Formatter and Framer.
 func (w *Writer) write(conn serverConn, p Priority, msg string) (int, error) {
 	// ensure it ends in a \n
-	if !strings.HasSuffix(msg, "\n") {
-		msg += "\n"
+	if !strings.HasSuffix(msg, EOL) {
+		msg += EOL
 	}
 
 	err := conn.writeString(w.framer, w.formatter, p, w.hostname, w.appName, w.tag, msg)

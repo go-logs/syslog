@@ -25,7 +25,7 @@ type DialFunc func(string, string) (net.Conn, error)
 // write to the returned Writer sends a log message with the given
 // priority and prefix.
 func New(priority Priority, tag string) (w *Writer, err error) {
-	return Dial("", "", priority, tag)
+	return Dial(EmptyString, EmptyString, priority, tag)
 }
 
 // Dial establishes a connection to a log daemon by connecting to
@@ -90,7 +90,7 @@ func dialAllParameters(network, raddr string, priority Priority, tag string, tls
 		return nil, err
 	}
 
-	if tag == "" {
+	if tag == EmptyString {
 		tag = os.Args[0]
 	}
 	hostname, _ := os.Hostname()
@@ -118,9 +118,9 @@ func dialAllParameters(network, raddr string, priority Priority, tag string, tls
 // argument is the flag set passed through to log.New to create
 // the Logger.
 func NewLogger(p Priority, logFlag int) (*log.Logger, error) {
-	s, err := New(p, "")
+	s, err := New(p, EmptyString)
 	if err != nil {
 		return nil, err
 	}
-	return log.New(s, "", logFlag), nil
+	return log.New(s, EmptyString, logFlag), nil
 }

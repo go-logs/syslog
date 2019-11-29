@@ -35,9 +35,9 @@ func (df dialerFunctionWrapper) Call() (serverConn, string, error) {
 // function and adding it to the map.
 func (w *Writer) getDialer() dialerFunctionWrapper {
 	dialers := map[string]dialerFunctionWrapper{
-		"":        dialerFunctionWrapper{"unixDialer", w.unixDialer},
-		"tcp+tls": dialerFunctionWrapper{"tlsDialer", w.tlsDialer},
-		"custom":  dialerFunctionWrapper{"customDialer", w.customDialer},
+		EmptyString: dialerFunctionWrapper{"unixDialer", w.unixDialer},
+		"tcp+tls":   dialerFunctionWrapper{"tlsDialer", w.tlsDialer},
+		"custom":    dialerFunctionWrapper{"customDialer", w.customDialer},
 	}
 	dialer, ok := dialers[w.network]
 	if !ok {
@@ -51,7 +51,7 @@ func (w *Writer) getDialer() dialerFunctionWrapper {
 func (w *Writer) unixDialer() (serverConn, string, error) {
 	sc, err := unixSyslog()
 	hostname := w.hostname
-	if hostname == "" {
+	if hostname == EmptyString {
 		hostname = "localhost"
 	}
 	return sc, hostname, err
@@ -65,7 +65,7 @@ func (w *Writer) tlsDialer() (serverConn, string, error) {
 	hostname := w.hostname
 	if err == nil {
 		sc = &netConn{conn: c}
-		if hostname == "" {
+		if hostname == EmptyString {
 			hostname = c.LocalAddr().String()
 		}
 	}
@@ -80,7 +80,7 @@ func (w *Writer) basicDialer() (serverConn, string, error) {
 	hostname := w.hostname
 	if err == nil {
 		sc = &netConn{conn: c}
-		if hostname == "" {
+		if hostname == EmptyString {
 			hostname = c.LocalAddr().String()
 		}
 	}
@@ -96,7 +96,7 @@ func (w *Writer) customDialer() (serverConn, string, error) {
 	hostname := w.hostname
 	if err == nil {
 		sc = &netConn{conn: c}
-		if hostname == "" {
+		if hostname == EmptyString {
 			hostname = c.LocalAddr().String()
 		}
 	}
