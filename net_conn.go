@@ -1,4 +1,4 @@
-package srslog
+package syslog
 
 import (
 	"net"

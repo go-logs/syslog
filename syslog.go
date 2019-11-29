@@ -1,4 +1,4 @@
-package srslog
+package syslog
 
 import (
 	"crypto/tls"
@@ -39,7 +39,7 @@ func Dial(network, raddr string, priority Priority, tag string) (*Writer, error)
 
 // ErrNilDialFunc is returned from DialWithCustomDialer when a nil DialFunc is passed,
 // avoiding a nil pointer deference panic.
-var ErrNilDialFunc = errors.New("srslog: nil DialFunc passed to DialWithCustomDialer")
+var ErrNilDialFunc = errors.New("syslog: nil DialFunc passed to DialWithCustomDialer")
 
 // DialWithCustomDialer establishes a connection by calling customDial.
 // Each write to the returned Writer sends a log message with the given facility, severity and tag.
