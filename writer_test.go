@@ -58,6 +58,22 @@ func TestSetHostname(t *testing.T) {
 	<-done
 }
 
+func TestSetAppName(t *testing.T) {
+	customAppName := "kubernetes"
+	expected := customAppName
+
+	w := Writer{
+		priority: LOG_ERR,
+		network:  "udp",
+		raddr:    "127.0.0.1",
+	}
+
+	w.SetAppName(customAppName)
+	if w.appName != expected {
+		t.Errorf("expected application name: %s, got %s", expected, w.appName)
+	}
+}
+
 func TestWriteFormatters(t *testing.T) {
 	tests := []struct {
 		name string
@@ -96,7 +112,7 @@ func TestWriteFormatters(t *testing.T) {
 		if f == nil {
 			f = DefaultFormatter
 		}
-		expected := strings.TrimSpace(f(LOG_ERR, "hostname", "tag", "this is a test message"))
+		expected := strings.TrimSpace(f(LOG_ERR, "hostname", "", "tag", "this is a test message"))
 
 		_, err = w.Write([]byte("this is a test message"))
 		if err != nil {
@@ -104,7 +120,7 @@ func TestWriteFormatters(t *testing.T) {
 		}
 		sent := strings.TrimSpace(<-done)
 		if sent != expected {
-			t.Errorf("expected to use the %v formatter, got %v, expected %v", test.name, sent, expected)
+			t.Errorf("expected to use the %v formatter, \ngot      %v, \nexpected %v", test.name, sent, expected)
 		}
 	}
 }
@@ -129,6 +145,7 @@ func TestWriterFramers(t *testing.T) {
 			priority: LOG_ERR,
 			tag:      "tag",
 			hostname: "hostname",
+			appName:  "appName",
 			network:  "udp",
 			raddr:    addr,
 		}
@@ -145,7 +162,7 @@ func TestWriterFramers(t *testing.T) {
 		if f == nil {
 			f = DefaultFramer
 		}
-		expected := strings.TrimSpace(f(DefaultFormatter(LOG_ERR, "hostname", "tag", "this is a test message") + "\n"))
+		expected := strings.TrimSpace(f(DefaultFormatter(LOG_ERR, "hostname", "AppName", "tag", "this is a test message") + "\n"))
 
 		_, err = w.Write([]byte("this is a test message"))
 		if err != nil {
@@ -168,6 +185,7 @@ func TestWriteWithDefaultPriority(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "hostname",
+		appName:  "appName",
 		network:  "udp",
 		raddr:    addr,
 	}
@@ -200,6 +218,7 @@ func TestWriteWithPriority(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "hostname",
+		appName:  "appName",
 		network:  "udp",
 		raddr:    addr,
 	}
@@ -232,6 +251,7 @@ func TestWriteWithPriorityAndFacility(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "hostname",
+		appName:  "appName",
 		network:  "udp",
 		raddr:    addr,
 	}
@@ -264,6 +284,7 @@ func TestDebug(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "hostname",
+		appName:  "appName",
 		network:  "udp",
 		raddr:    addr,
 	}
@@ -292,6 +313,7 @@ func TestInfo(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "hostname",
+		appName:  "appName",
 		network:  "udp",
 		raddr:    addr,
 	}
@@ -320,6 +342,7 @@ func TestNotice(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "hostname",
+		appName:  "appName",
 		network:  "udp",
 		raddr:    addr,
 	}
@@ -348,6 +371,7 @@ func TestWarning(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "hostname",
+		appName:  "appName",
 		network:  "udp",
 		raddr:    addr,
 	}
@@ -376,6 +400,7 @@ func TestErr(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "hostname",
+		appName:  "appName",
 		network:  "udp",
 		raddr:    addr,
 	}
@@ -432,6 +457,7 @@ func TestAlert(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "hostname",
+		appName:  "appName",
 		network:  "udp",
 		raddr:    addr,
 	}
@@ -460,6 +486,7 @@ func TestEmerg(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "hostname",
+		appName:  "appName",
 		network:  "udp",
 		raddr:    addr,
 	}

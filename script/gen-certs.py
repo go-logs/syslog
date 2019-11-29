@@ -26,7 +26,7 @@ builder = builder.issuer_name(x509.Name([
     x509.NameAttribute(NameOID.COMMON_NAME, u'127.0.0.1'),
 ]))
 builder = builder.not_valid_before(datetime.datetime.today() - one_day)
-builder = builder.not_valid_after(datetime.datetime(2018, 12, 31))
+builder = builder.not_valid_after(datetime.datetime(2080, 12, 31))
 builder = builder.serial_number(int(uuid.uuid4()))
 builder = builder.public_key(private_key.public_key())
 builder = builder.add_extension(

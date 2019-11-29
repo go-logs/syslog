@@ -248,16 +248,6 @@ func TestNew(t *testing.T) {
 	s.Close()
 }
 
-func TestNewLogger(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping syslog test during -short")
-	}
-	f, err := NewLogger(LOG_USER|LOG_INFO, 0)
-	if f == nil {
-		t.Error(err)
-	}
-}
-
 func TestDial(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping syslog test during -short")
@@ -275,6 +265,26 @@ func TestDial(t *testing.T) {
 		t.Fatalf("Dial() failed: %s", err)
 	}
 	l.Close()
+}
+
+func testDialFunc(a , b string) (net.Conn, error) {
+	var nConn net.Conn
+	return nConn, nil
+}
+
+func TestDialWithCustomDialer(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping syslog test during -short")
+	}
+	f, err := DialWithCustomDialer("", "", (LOG_LOCAL7|LOG_DEBUG)+1, "syslog_test", nil)
+	if err == nil {
+		t.Fatalf("Should be return ErrNilDialFunc")
+		f.Close()
+	}
+	_, err = DialWithCustomDialer("", "", LOG_LOCAL7|LOG_DEBUG, "syslog_test", testDialFunc)
+	if err != nil {
+		t.Error("should be correct DialFunc")
+	}
 }
 
 func TestDialFails(t *testing.T) {
@@ -541,15 +551,44 @@ func TestLocalConn(t *testing.T) {
 
 	lc := localConn{conn: conn}
 
-	lc.writeString(nil, nil, LOG_ERR, "hostname", "tag", "content")
+	lc.writeString(nil, nil, LOG_ERR, "hostname", "appName", "tag", "content")
 
 	if len(messages) != 1 {
 		t.Errorf("should write one message")
 	}
 
-	if messages[0] != DefaultFramer(UnixFormatter(LOG_ERR, "hostname", "tag", "content")) {
+	if messages[0] != DefaultFramer(UnixFormatter(LOG_ERR, "hostname", "appName", "tag", "content")) {
 		t.Errorf("should use the unix formatter")
 	}
+}
+
+func TestNewLogger(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping syslog test during -short")
+	}
+	f, err := NewLogger(LOG_USER|LOG_INFO, 0)
+	if f == nil {
+		t.Error(err)
+	}
+	_, err = NewLogger(-1, 0)
+	if err == nil {
+		t.Error("should be invalid priority")
+	}
+}
+
+func TestUnixSyslog(t *testing.T) {
+	validLogTypes := logTypes
+
+	for i := 0; i < len(logTypes); i++ {
+		logTypes[i] = logTypes[i] + "bad"
+	}
+
+	_, err := unixSyslog()
+	if err == nil {
+		t.Error("should be invalid types")
+	}
+	logTypes = validLogTypes
+	validLogTypes = nil
 }
 
 type testLocalConn struct {

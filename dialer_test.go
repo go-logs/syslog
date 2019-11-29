@@ -14,6 +14,7 @@ func TestGetDialer(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "",
+		appName:  "",
 		network:  "",
 		raddr:    "",
 	}
@@ -60,6 +61,7 @@ func TestUnixDialer(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "",
+		appName:  "",
 		network:  "",
 		raddr:    "",
 	}
@@ -106,6 +108,7 @@ func TestTLSDialer(t *testing.T) {
 		priority:  LOG_ERR,
 		tag:       "tag",
 		hostname:  "",
+		appName:   "",
 		network:   "tcp+tls",
 		raddr:     addr,
 		tlsConfig: &config,
@@ -143,6 +146,7 @@ func TestTCPDialer(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "",
+		appName:  "",
 		network:  "tcp",
 		raddr:    addr,
 	}
@@ -179,6 +183,7 @@ func TestUDPDialer(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "",
+		appName:  "",
 		network:  "udp",
 		raddr:    addr,
 	}
@@ -215,6 +220,7 @@ func TestCustomDialer(t *testing.T) {
 		priority: LOG_ERR,
 		tag:      "tag",
 		hostname: "",
+		appName:  "",
 		network:  nwork,
 		raddr:    addr,
 		customDial: func(n string, a string) (net.Conn, error) {

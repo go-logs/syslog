@@ -13,7 +13,7 @@ import (
 // This interface allows us to work with both local and network connections,
 // and enables Solaris support (see syslog_unix.go).
 type serverConn interface {
-	writeString(framer Framer, formatter Formatter, p Priority, hostname, tag, s string) error
+	writeString(framer Framer, formatter Formatter, p Priority, hostname, appName, tag, s string) error
 	close() error
 }
 
@@ -99,6 +99,7 @@ func dialAllParameters(network, raddr string, priority Priority, tag string, tls
 		priority:   priority,
 		tag:        tag,
 		hostname:   hostname,
+		appName:    truncateStartStr(os.Args[0], appNameMaxLength),
 		network:    network,
 		raddr:      raddr,
 		tlsConfig:  tlsConfig,
