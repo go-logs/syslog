@@ -59,7 +59,10 @@ const (
 	LOG_LOCAL7
 )
 
-const EmptyString = ""
+const (
+	EMPTY_STRING = ""
+	SPACE_STRING = " "
+)
 
 func validatePriority(p Priority) error {
 	if p < 0 || p > LOG_LOCAL7|LOG_DEBUG {

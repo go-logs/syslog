@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-const framerRFC5425String = "%d %s"
+const FRAMER_RFC5425_STRING = "%d %s"
 
 // Framer is a type of function that takes an input string (typically an
 // already-formatted syslog message) and applies "message framing" to it. We
@@ -22,5 +22,5 @@ func DefaultFramer(in string) string {
 // RFC5425MessageLengthFramer prepends the message length to the front of the
 // provided message, as defined in RFC 5425.
 func RFC5425MessageLengthFramer(in string) string {
-	return fmt.Sprintf(framerRFC5425String, len(in), in)
+	return fmt.Sprintf(FRAMER_RFC5425_STRING, len(in), in)
 }
