@@ -21,6 +21,28 @@ const (
 	RFC5424_DATA_PARAM_FORMAT_STRING = " %s=\"%v\""
 	RFC5424_DATA_BEGIN_LINE          = "["
 	RFC5424_DATA_END_LINE            = "]"
+
+	RFC5424_DATA_ID_NAME_TIME_QUALITY = "timeQuality"
+	RFC5424_DATA_ID_NAME_TIME_QUALITY_TZ_KNOWN      = "tzKnown"
+	RFC5424_DATA_ID_NAME_TIME_QUALITY_IS_SYNCED     = "isSynced"
+	RFC5424_DATA_ID_NAME_TIME_QUALITY_SYNC_ACCURACY = "syncAccuracy"
+
+	RFC5424_DATA_ID_NAME_ORIGIN       = "origin"
+	RFC5424_DATA_ID_NAME_ORIGIN_IP            = "ip"
+	RFC5424_DATA_ID_NAME_ORIGIN_ENTERPRISE_ID = "enterpriseId"
+	RFC5424_DATA_ID_NAME_ORIGIN_SOFTWARE      = "software"
+	RFC5424_DATA_ID_NAME_ORIGIN_SW_VERSION    = "swVersion"
+
+	RFC5424_DATA_ID_NAME_META         = "meta"
+	RFC5424_DATA_ID_NAME_META_SEQUENCE_ID = "sequenceId"
+	RFC5424_DATA_ID_NAME_META_SYS_UP_TIME = "sysUpTime"
+	RFC5424_DATA_ID_NAME_META_LANGUAGE    = "language"
+
+	RFC5424_DATA_ID_META_SEQUENCE_ID_MIN = 0
+	RFC5424_DATA_ID_META_SEQUENCE_ID_MAX = int32(2147483647)
+
+	RFC5424_DATA_ID_META_SYS_UP_TIME_MIN = 0
+	RFC5424_DATA_ID_META_SYS_UP_TIME_MAX = 9
 )
 
 const (
@@ -32,33 +54,33 @@ const (
 	RFC5424_TIMESTAMP_FORMAT_MICRO = "2006-01-02T15:04:05.999999Z07:00"
 )
 
-// RFC5424DataIDsTimeQuality 
-type RFC5424DataIDsTimeQuality struct {
-	tzKnown      bool
-	isSynced     bool
-	syncAccuracy int32
+// RFC5424DataIDTimeQuality 
+type RFC5424DataIDTimeQuality struct {
+	TzKnown      bool
+	IsSynced     bool
+	SyncAccuracy int32
 }
 
-// RFC5424DataIDsOrigin 
-type RFC5424DataIDsOrigin struct {
-	ip           string
-	enterpriseId string
-	software     string
-	swVersion    string
+// RFC5424DataIDOrigin 
+type RFC5424DataIDOrigin struct {
+	IP           []string
+	EnterpriseId string
+	Software     string
+	SwVersion    string
 }
 
-// RFC5424DataIDsMeta 
-type RFC5424DataIDsMeta struct {
-	sequenceId string
-	sysUpTime  string
-	language   string
+// RFC5424DataIDMeta 
+type RFC5424DataIDMeta struct {
+	SequenceId int32	// 2147483647
+	SysUpTime  int		// 0-9
+	Language   string
 }
 
 // RFC5424DataIDs 
 type RFC5424DataIDs struct {
-	timeQuality *RFC5424DataIDsTimeQuality
-	origin      *RFC5424DataIDsOrigin
-	meta        *RFC5424DataIDsMeta
+	TimeQuality *RFC5424DataIDTimeQuality
+	Origin      *RFC5424DataIDOrigin
+	Meta        *RFC5424DataIDMeta
 }
 
 // RFC5424DataParams 
@@ -66,7 +88,7 @@ type RFC5424DataParams map[string]interface{}
 
 // RFC5424Data 
 type RFC5424Data struct {
-	ID       string
+	ID     string
 	Params RFC5424DataParams
 }
 
@@ -77,8 +99,6 @@ type RFC5424StructuredData struct {
 
 // RFC5424Header 
 type RFC5424Header struct {
-	Priority       Priority
-	Version        int
 	Hostname       string
 	AppName        string
 	TimestampIsUTC bool
@@ -110,23 +130,97 @@ func boolInt(v bool) int {
 	return 0
 }
 
-// String.
-func (s *RFC5424DataIDs) String() string {
+// timeQualityString 
+func (s *RFC5424DataIDs) timeQualityString() string {
 	var str string
 
-	if s != nil {
-		str = SPACE_STRING + str
+	if s != nil && s.TimeQuality != nil {
+		str = RFC5424_DATA_BEGIN_LINE + RFC5424_DATA_ID_NAME_TIME_QUALITY +
+			fmt.Sprintf(RFC5424_DATA_PARAM_FORMAT_STRING,
+				RFC5424_DATA_ID_NAME_TIME_QUALITY_TZ_KNOWN, boolInt(s.TimeQuality.TzKnown)) +
+			fmt.Sprintf(RFC5424_DATA_PARAM_FORMAT_STRING,
+				RFC5424_DATA_ID_NAME_TIME_QUALITY_IS_SYNCED, boolInt(s.TimeQuality.IsSynced))
+		if s.TimeQuality.IsSynced && s.TimeQuality.SyncAccuracy > 0 {
+			str = str + fmt.Sprintf(RFC5424_DATA_PARAM_FORMAT_STRING,
+				RFC5424_DATA_ID_NAME_TIME_QUALITY_SYNC_ACCURACY, s.TimeQuality.SyncAccuracy)
+		}
+		str = str + RFC5424_DATA_END_LINE
 	}
 
 	return str
 }
 
-// Close.
+// originString 
+func (s *RFC5424DataIDs) originString() string {
+	var str string
+
+	if s != nil && s.Origin != nil {
+		str = RFC5424_DATA_BEGIN_LINE + RFC5424_DATA_ID_NAME_ORIGIN
+		for i := 0; i < len(s.Origin.IP); i++ {
+			str = str + fmt.Sprintf(RFC5424_DATA_PARAM_FORMAT_STRING,
+				RFC5424_DATA_ID_NAME_ORIGIN_IP, s.Origin.IP[i])
+		}
+		str = str + fmt.Sprintf(RFC5424_DATA_PARAM_FORMAT_STRING,
+				RFC5424_DATA_ID_NAME_ORIGIN_ENTERPRISE_ID, s.Origin.EnterpriseId) +
+			fmt.Sprintf(RFC5424_DATA_PARAM_FORMAT_STRING,
+				RFC5424_DATA_ID_NAME_ORIGIN_SOFTWARE, s.Origin.Software) +
+			fmt.Sprintf(RFC5424_DATA_PARAM_FORMAT_STRING,
+				RFC5424_DATA_ID_NAME_ORIGIN_SW_VERSION, s.Origin.SwVersion) +
+			RFC5424_DATA_END_LINE
+	}
+
+	return str
+}
+
+// metaString 
+func (s *RFC5424DataIDs) metaString() string {
+	var str string
+
+	if s != nil && s.Meta != nil {
+		str = RFC5424_DATA_BEGIN_LINE + RFC5424_DATA_ID_NAME_META
+
+		if s.Meta.SequenceId > RFC5424_DATA_ID_META_SEQUENCE_ID_MAX {
+			s.Meta.SequenceId = RFC5424_DATA_ID_META_SEQUENCE_ID_MAX
+		} else if s.Meta.SequenceId < RFC5424_DATA_ID_META_SEQUENCE_ID_MIN {
+			s.Meta.SequenceId = RFC5424_DATA_ID_META_SEQUENCE_ID_MIN
+		}
+		str = str + fmt.Sprintf(RFC5424_DATA_PARAM_FORMAT_STRING,
+			RFC5424_DATA_ID_NAME_META_SEQUENCE_ID, s.Meta.SequenceId)
+
+		if s.Meta.SysUpTime > RFC5424_DATA_ID_META_SYS_UP_TIME_MAX {
+			s.Meta.SysUpTime = RFC5424_DATA_ID_META_SYS_UP_TIME_MAX
+		} else if s.Meta.SysUpTime < RFC5424_DATA_ID_META_SYS_UP_TIME_MIN {
+			s.Meta.SysUpTime = RFC5424_DATA_ID_META_SYS_UP_TIME_MIN
+		}
+		str = str + fmt.Sprintf(RFC5424_DATA_PARAM_FORMAT_STRING,
+			RFC5424_DATA_ID_NAME_META_SYS_UP_TIME, s.Meta.SysUpTime) +
+			fmt.Sprintf(RFC5424_DATA_PARAM_FORMAT_STRING,
+				RFC5424_DATA_ID_NAME_META_LANGUAGE, s.Meta.Language)
+	}
+
+	return str
+}
+
+// String 
+func (s *RFC5424DataIDs) String() string {
+	var str string
+
+	if s != nil {
+		str = str + s.timeQualityString() + s.originString() + s.metaString()
+		if str != EMPTY_STRING {
+			str = SPACE_STRING + str
+		}
+	}
+
+	return str
+}
+
+// Close 
 func (s *RFC5424DataIDs) Close() {
 	if s != nil {
-		s.timeQuality = nil
-		s.origin = nil
-		s.meta = nil
+		s.TimeQuality = nil
+		s.Origin = nil
+		s.Meta = nil
 		s = nil
 	}
 }
@@ -179,24 +273,16 @@ func (s *RFC5424StructuredData) Close() {
 	}
 }
 
-// priority 
-func (h *RFC5424Header) priority() {
-	if h.Priority < HEADER_PRIORITY_MIN {
-		h.Priority = HEADER_PRIORITY_MIN
-	} else if h.Priority > HEADER_PRIORITY_MAX {
-		h.Priority = HEADER_PRIORITY_MAX
-	}
-}
-
-// setPriority 
-func (h *RFC5424Header) setPriority(facility Priority, severity Priority) {
-	h.Priority = (facility & FacilityMask) | (severity & SeverityMask)
-}
-
 // hostname 
 func (h *RFC5424Header) hostname() {
+	var err error
+
 	if h.Hostname == EMPTY_STRING {
-		h.Hostname, _ = os.Hostname()
+		h.Hostname, err = os.Hostname()
+		if err != nil {
+			h.Hostname = RFC5424_EMPTY_VALUE
+			err = nil
+		}
 	}
 	if len(h.Hostname) > HEADER_HOSTNAME_LENGTH {
 		h.Hostname = truncateStartStr(h.Hostname, HEADER_HOSTNAME_LENGTH)
@@ -240,9 +326,9 @@ func (h *RFC5424Header) timestamp(tt time.Time) string {
 }
 
 // String 
-func (h *RFC5424Header) String() string {
+func (h *RFC5424Header) String(priority Priority) string {
 	return fmt.Sprintf(RFC5424_STRING_FORMAT_HEADER,
-		h.Priority, RFC5424_VERSION, h.timestamp(time.Now()), h.Hostname, h.AppName, os.Getpid(), h.MessageID)
+		priority, RFC5424_VERSION, h.timestamp(time.Now()), h.Hostname, h.AppName, os.Getpid(), h.MessageID)
 }
 
 // Close 
@@ -252,29 +338,124 @@ func (h *RFC5424Header) Close() {
 	}
 }
 
-// string 
-func (f *RFC5424) string() string {
+// priority 
+func (f *RFC5424) priority(severity Priority) Priority {
+	return priority(BuildPriority(f.Facility, severity))
+}
+
+// structuredDataIDs 
+func (f *RFC5424) structuredDataIDs() {
+	if f.StructuredDataIDs == nil {
+		f.StructuredDataIDs = &RFC5424DataIDs{}
+	}
+}
+
+// structuredData 
+func (f *RFC5424) structuredData() {
+	if f.StructuredData == nil {
+		f.StructuredData = &RFC5424StructuredData{}
+	}
+}
+
+// header 
+func (f *RFC5424) header() {
 	if f.Header == nil {
 		f.Header = &RFC5424Header{}
 	}
+}
 
-	f.Header.priority()
+// string 
+func (f *RFC5424) string(severity Priority) string {
+	f.header()
 	f.Header.hostname()
 	f.Header.appName()
 	f.Header.messageID()
 
-	return f.Header.String() + SPACE_STRING + f.StructuredData.String() + f.StructuredDataIDs.String()
+	return f.Header.String(f.priority(severity)) + SPACE_STRING + f.StructuredData.String() + f.StructuredDataIDs.String()
 }
 
 // String
 func (f *RFC5424) String(severity Priority, message string) string {
-	f.Header.setPriority(f.Facility, severity)
-
 	if message == EMPTY_STRING {
-		return f.string()
+		return f.string(severity)
 	} else {
-		return f.string() + SPACE_STRING + message
+		return f.string(severity) + SPACE_STRING + message
 	}
+}
+
+// SetHostname 
+func (f *RFC5424) SetHostname(hn string) {
+	f.header()
+	f.Header.Hostname = hn
+}
+
+// SetAppName 
+func (f *RFC5424) SetAppName(an string) {
+	f.header()
+	f.Header.AppName = an
+}
+
+// SetFacility 
+func (f *RFC5424) SetTimestampIsUTC(t bool) {
+	f.header()
+	f.Header.TimestampIsUTC = t
+}
+
+// SetTimestampLevel 
+func (f *RFC5424) SetTimestampLevel(l string) {
+	f.header()
+	f.Header.TimestampLevel = l
+}
+
+// SetTag 
+func (f *RFC5424) SetTag(t string) {
+	f.header()
+	f.Header.MessageID = t
+}
+
+// SetFacility 
+func (f *RFC5424) SetFacility(facility Priority) {
+	f.Facility = facility
+}
+
+// AddStructuredData 
+func (f *RFC5424) AddStructuredData(data *RFC5424Data) {
+	f.structuredData()
+	f.StructuredData.Elements = append(f.StructuredData.Elements, data)
+}
+
+// SetStructuredData 
+func (f *RFC5424) SetStructuredData(data *RFC5424Data) {
+	if f.StructuredData != nil {
+		f.StructuredData.Close()
+	}
+	f.AddStructuredData(data)
+}
+
+// SetStructuredDataIDs 
+func (f *RFC5424) SetStructuredDataIDs(data *RFC5424DataIDs) {
+	if f.StructuredDataIDs != nil {
+		f.StructuredDataIDs.Close()
+	}
+	f.StructuredDataIDs = data
+}
+
+// SetStructuredDataIDTimeQuality 
+func (f *RFC5424) SetStructuredDataIDTimeQuality(data *RFC5424DataIDTimeQuality) {
+	f.structuredDataIDs()
+	f.StructuredDataIDs.TimeQuality = data
+}
+
+// SetStructuredDataIDOrigin 
+func (f *RFC5424) SetStructuredDataIDOrigin(data *RFC5424DataIDOrigin) {
+	f.structuredDataIDs()
+	f.StructuredDataIDs.Origin = data
+}
+
+// SetStructuredDataIDMeta 
+func (f *RFC5424) SetStructuredDataIDMeta(data *RFC5424DataIDMeta) {
+	f.structuredDataIDs()
+	f.StructuredDataIDs.Meta = data
 }
 
 // Close 

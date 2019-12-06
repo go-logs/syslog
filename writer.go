@@ -168,7 +168,7 @@ func (w *Writer) Debug(m string) (err error) {
 // writeAndRetry takes a severity and the string to write. Any facility passed to
 // it as part of the severity Priority will be ignored.
 func (w *Writer) writeAndRetry(severity Priority, s string) (int, error) {
-	pr := (w.priority & FacilityMask) | (severity & SeverityMask)
+	pr := (w.priority & FACILITY_MASK) | (severity & SEVERITY_MASK)
 
 	return w.writeAndRetryWithPriority(pr, s)
 }

@@ -11,7 +11,7 @@ const (
 	formatterUnixString    = "<%d>%s %s[%d]: %s"
 
 	HEADER_PRIORITY_MIN = Priority(0)
-	HEADER_PRIORITY_MAX = Priority((LOG_LOCAL7 & FacilityMask) | (LOG_DEBUG & SeverityMask))
+	HEADER_PRIORITY_MAX = Priority((LOG_LOCAL7 & FACILITY_MASK) | (LOG_DEBUG & SEVERITY_MASK))
 
 	HEADER_HOSTNAME_LENGTH = 255
 
@@ -38,4 +38,19 @@ func UnixFormatter(p Priority, hostname, appName, tag, content string) string {
 	timestamp := time.Now().Format(time.Stamp)
 	return fmt.Sprintf(formatterUnixString,
 		p, timestamp, tag, os.Getpid(), content)
+}
+
+// priority 
+func priority(p Priority) Priority {
+	if p < HEADER_PRIORITY_MIN {
+		p = HEADER_PRIORITY_MIN
+	} else if p > HEADER_PRIORITY_MAX {
+		p = HEADER_PRIORITY_MAX
+	}
+	return p
+}
+
+// BuildPriority 
+func BuildPriority(facility Priority, severity Priority) Priority {
+	return (facility & FACILITY_MASK) | (severity & SEVERITY_MASK)
 }

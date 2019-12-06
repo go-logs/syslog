@@ -10,8 +10,8 @@ import (
 // the default facility is LOG_KERN.
 type Priority int
 
-const SeverityMask = 0x07
-const FacilityMask = 0xf8
+const SEVERITY_MASK = 0x07
+const FACILITY_MASK = 0xf8
 
 const (
 	// Severity.

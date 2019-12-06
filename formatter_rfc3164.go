@@ -10,7 +10,6 @@ const RFC3164_STRING_FORMAT_HEADER = "<%d>%s %s %s[%d]:"
 
 // RFC3164Header 
 type RFC3164Header struct {
-	Priority       Priority
 	Hostname       string
 	TimestampIsUTC bool
 	Tag            string
@@ -20,20 +19,6 @@ type RFC3164Header struct {
 type RFC3164 struct {
 	Facility Priority
 	Header   *RFC3164Header
-}
-
-// priority 
-func (h *RFC3164Header) priority() {
-	if h.Priority < HEADER_PRIORITY_MIN {
-		h.Priority = HEADER_PRIORITY_MIN
-	} else if h.Priority > HEADER_PRIORITY_MAX {
-		h.Priority = HEADER_PRIORITY_MAX
-	}
-}
-
-// setPriority 
-func (h *RFC3164Header) setPriority(facility Priority, severity Priority) {
-	h.Priority = (facility & FacilityMask) | (severity & SeverityMask)
 }
 
 // hostname 
@@ -66,9 +51,9 @@ func (h *RFC3164Header) timestamp(tt time.Time) string {
 }
 
 // String 
-func (h *RFC3164Header) String() string {
+func (h *RFC3164Header) String(priority Priority) string {
 	return fmt.Sprintf(RFC3164_STRING_FORMAT_HEADER,
-		h.Priority, h.timestamp(time.Now()), h.Hostname, h.Tag, os.Getpid())
+		priority, h.timestamp(time.Now()), h.Hostname, h.Tag, os.Getpid())
 }
 
 // Close 
@@ -78,27 +63,29 @@ func (h *RFC3164Header) Close() {
 	}
 }
 
+// priority 
+func (f *RFC3164) priority(severity Priority) Priority {
+	return priority(BuildPriority(f.Facility, severity))
+}
+
 // string 
-func (f *RFC3164) string() string {
+func (f *RFC3164) string(severity Priority) string {
 	if f.Header == nil {
 		f.Header = &RFC3164Header{}
 	}
 
-	f.Header.priority()
 	f.Header.hostname()
 	f.Header.tag()
 
-	return f.Header.String()
+	return f.Header.String(severity)
 }
 
 // String 
 func (f *RFC3164) String(severity Priority, message string) string {
-	f.Header.setPriority(f.Facility, severity)
-
 	if message == EMPTY_STRING {
-		return f.string()
+		return f.string(severity)
 	} else {
-		return f.string() + SPACE_STRING + message
+		return f.string(severity) + SPACE_STRING + message
 	}
 }
 
