@@ -1,9 +1,5 @@
 package syslog
 
-import (
-	"errors"
-)
-
 // Priority is a combination of the syslog facility and
 // severity. For example, LOG_ALERT | LOG_FTP sends an alert severity
 // message from the FTP facility. The default severity is LOG_EMERG;
@@ -63,11 +59,3 @@ const (
 	EMPTY_STRING = ""
 	SPACE_STRING = " "
 )
-
-func validatePriority(p Priority) error {
-	if p < 0 || p > LOG_LOCAL7|LOG_DEBUG {
-		return errors.New("syslog: invalid priority")
-	} else {
-		return nil
-	}
-}

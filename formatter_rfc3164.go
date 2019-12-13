@@ -23,22 +23,12 @@ type RFC3164 struct {
 
 // hostname 
 func (h *RFC3164Header) hostname() {
-	if h.Hostname == EMPTY_STRING {
-		h.Hostname, _ = os.Hostname()
-	}
-	if len(h.Hostname) > HEADER_HOSTNAME_LENGTH {
-		h.Hostname = truncateStartStr(h.Hostname, HEADER_HOSTNAME_LENGTH)
-	}
+	h.Hostname = BuildHostname(h.Hostname)
 }
 
 // tag 
 func (h *RFC3164Header) tag() {
-	if h.Tag == EMPTY_STRING {
-		h.Tag = os.Args[0]
-	}
-	if len(h.Tag) > HEADER_TAG_LENGTH {
-		h.Tag = truncateStartStr(h.Tag, HEADER_TAG_LENGTH)
-	}
+	h.Tag = BuildTag(h.Tag)
 }
 
 // timestamp 
@@ -65,11 +55,11 @@ func (h *RFC3164Header) Close() {
 
 // priority 
 func (f *RFC3164) priority(severity Priority) Priority {
-	return priority(BuildPriority(f.Facility, severity))
+	return BuildPriority(f.Facility, severity)
 }
 
 // string 
-func (f *RFC3164) string(severity Priority) string {
+func (f *RFC3164) headerString(severity Priority) string {
 	if f.Header == nil {
 		f.Header = &RFC3164Header{}
 	}
@@ -83,9 +73,9 @@ func (f *RFC3164) string(severity Priority) string {
 // String 
 func (f *RFC3164) String(severity Priority, message string) string {
 	if message == EMPTY_STRING {
-		return f.string(severity)
+		return f.headerString(severity)
 	} else {
-		return f.string(severity) + SPACE_STRING + message
+		return f.headerString(severity) + SPACE_STRING + message
 	}
 }
 
@@ -107,7 +97,7 @@ func RFC3164Formatter(p Priority, hostname, appName, tag, content string) string
 		Header:   &RFC3164Header{
 			Hostname:       hostname,
 			Tag:            tag,
-			TimestampIsUTC: true,
+			TimestampIsUTC: false,
 		},
 	}
 	return r.String(p, content)

@@ -84,7 +84,7 @@ func DialWithTLSConfig(network, raddr string, priority Priority, tag string, tls
 	return dialAllParameters(network, raddr, priority, tag, tlsConfig, nil)
 }
 
-// implementation of the various functions above
+// dialAllParameters implementation of the various functions above
 func dialAllParameters(network, raddr string, priority Priority, tag string, tlsConfig *tls.Config, customDial DialFunc) (*Writer, error) {
 	if err := validatePriority(priority); err != nil {
 		return nil, err
@@ -111,6 +111,15 @@ func dialAllParameters(network, raddr string, priority Priority, tag string, tls
 		return nil, err
 	}
 	return w, err
+}
+
+// validatePriority 
+func validatePriority(p Priority) error {
+	if p < 0 || p > LOG_LOCAL7|LOG_DEBUG {
+		return errors.New("syslog: invalid priority")
+	} else {
+		return nil
+	}
 }
 
 // NewLogger creates a log.Logger whose output is written to

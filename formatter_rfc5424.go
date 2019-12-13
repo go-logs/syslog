@@ -114,14 +114,6 @@ type RFC5424 struct {
 	StructuredDataIDs *RFC5424DataIDs
 }
 
-// if string's length is greater than max, then use the last part
-func truncateStartStr(s string, max int) string {
-	if (len(s) > max) {
-		return s[len(s) - max:]
-	}
-	return s
-}
-
 // boolInt 
 func boolInt(v bool) int {
 	if v {
@@ -275,18 +267,7 @@ func (s *RFC5424StructuredData) Close() {
 
 // hostname 
 func (h *RFC5424Header) hostname() {
-	var err error
-
-	if h.Hostname == EMPTY_STRING {
-		h.Hostname, err = os.Hostname()
-		if err != nil {
-			h.Hostname = RFC5424_EMPTY_VALUE
-			err = nil
-		}
-	}
-	if len(h.Hostname) > HEADER_HOSTNAME_LENGTH {
-		h.Hostname = truncateStartStr(h.Hostname, HEADER_HOSTNAME_LENGTH)
-	}
+	h.Hostname = BuildHostname(h.Hostname)
 }
 
 // appName 
@@ -301,12 +282,7 @@ func (h *RFC5424Header) appName() {
 
 // messageID 
 func (h *RFC5424Header) messageID() {
-	if h.MessageID == EMPTY_STRING {
-		h.MessageID = RFC5424_EMPTY_VALUE
-	}
-	if h.MessageID != RFC5424_EMPTY_VALUE && len(h.MessageID) > HEADER_TAG_LENGTH {
-		h.MessageID = truncateStartStr(h.MessageID, HEADER_TAG_LENGTH)
-	}
+	h.MessageID = BuildTag(h.MessageID)
 }
 
 // timestamp 
@@ -340,7 +316,7 @@ func (h *RFC5424Header) Close() {
 
 // priority 
 func (f *RFC5424) priority(severity Priority) Priority {
-	return priority(BuildPriority(f.Facility, severity))
+	return BuildPriority(f.Facility, severity)
 }
 
 // structuredDataIDs 

@@ -1,8 +1,8 @@
 package syslog
 
 import (
-	"fmt"
 	"os"
+	"fmt"
 	"time"
 )
 
@@ -40,8 +40,16 @@ func UnixFormatter(p Priority, hostname, appName, tag, content string) string {
 		p, timestamp, tag, os.Getpid(), content)
 }
 
-// priority 
-func priority(p Priority) Priority {
+// if string's length is greater than max, then use the last part
+func truncateStartStr(s string, max int) string {
+	if (len(s) > max) {
+		return s[len(s) - max:]
+	}
+	return s
+}
+
+// priorityLimits 
+func priorityLimits(p Priority) Priority {
 	if p < HEADER_PRIORITY_MIN {
 		p = HEADER_PRIORITY_MIN
 	} else if p > HEADER_PRIORITY_MAX {
@@ -52,5 +60,27 @@ func priority(p Priority) Priority {
 
 // BuildPriority 
 func BuildPriority(facility Priority, severity Priority) Priority {
-	return (facility & FACILITY_MASK) | (severity & SEVERITY_MASK)
+	return priorityLimits((facility & FACILITY_MASK) | (severity & SEVERITY_MASK))
+}
+
+// BuildHostname 
+func BuildHostname(hn string) string {
+	if hn == EMPTY_STRING {
+		hn, _ = os.Hostname()
+	}
+	if len(hn) > HEADER_HOSTNAME_LENGTH {
+		hn = truncateStartStr(hn, HEADER_HOSTNAME_LENGTH)
+	}
+	return hn
+}
+
+// BuildTag 
+func BuildTag(t string) string {
+	if t == EMPTY_STRING {
+		t = os.Args[0]
+	}
+	if len(t) > HEADER_TAG_LENGTH {
+		t = truncateStartStr(t, HEADER_TAG_LENGTH)
+	}
+	return t
 }
