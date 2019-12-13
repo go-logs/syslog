@@ -281,7 +281,7 @@ func (h *RFC5424Header) appName() {
 }
 
 // messageID 
-func (h *RFC5424Header) messageID() {
+func (h *RFC5424Header) tag() {
 	h.MessageID = BuildTag(h.MessageID)
 }
 
@@ -341,11 +341,11 @@ func (f *RFC5424) header() {
 }
 
 // string 
-func (f *RFC5424) string(severity Priority) string {
+func (f *RFC5424) headerString(severity Priority) string {
 	f.header()
 	f.Header.hostname()
 	f.Header.appName()
-	f.Header.messageID()
+	f.Header.tag()
 
 	return f.Header.String(f.priority(severity)) + SPACE_STRING + f.StructuredData.String() + f.StructuredDataIDs.String()
 }
@@ -353,9 +353,9 @@ func (f *RFC5424) string(severity Priority) string {
 // String
 func (f *RFC5424) String(severity Priority, message string) string {
 	if message == EMPTY_STRING {
-		return f.string(severity)
+		return f.headerString(severity)
 	} else {
-		return f.string(severity) + SPACE_STRING + message
+		return f.headerString(severity) + SPACE_STRING + message
 	}
 }
 
@@ -371,7 +371,7 @@ func (f *RFC5424) SetAppName(an string) {
 	f.Header.AppName = an
 }
 
-// SetFacility 
+// SetTimestampIsUTC 
 func (f *RFC5424) SetTimestampIsUTC(t bool) {
 	f.header()
 	f.Header.TimestampIsUTC = t

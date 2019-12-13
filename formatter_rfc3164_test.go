@@ -14,7 +14,7 @@ func TestRFC3164HeaderHostname(t *testing.T) {
 	hn, _ := os.Hostname()
 
 	if h.Hostname != hn {
-		t.Errorf("RFC3164 hostname should be equal %s for RFC3164Header", hn)
+		t.Errorf("RFC3164 hostname should be equal %s for RFC3164Header %s", hn, h.Hostname)
 	}
 
 	hn = strings.Repeat("hostname_test", 20)
@@ -148,6 +148,49 @@ func TestRFC3164Close(t *testing.T) {
 	if f == nil {
 		t.Error("Should be RFC3164 destroyed")
 	}
+}
+
+func TestRFC3164SetHostname(t *testing.T) {
+	f := &RFC3164{}
+	hn := "test_hostname"
+	f.SetHostname(hn)
+
+	if f.Header.Hostname != hn {
+		t.Errorf("Set RFC3164 hostname should be equal %s for RFC3164Header %s", hn, f.Header.Hostname)
+	}
+	f.Close()
+}
+
+func TestRFC3164SetTimestampIsUTC(t *testing.T) {
+	f := &RFC3164{}
+	timestampIsUTC := true
+	f.SetTimestampIsUTC(timestampIsUTC)
+
+	if f.Header.TimestampIsUTC != timestampIsUTC {
+		t.Errorf("Set RFC3164 UTC timestamp should be equal %t for RFC3164Header %t", timestampIsUTC, f.Header.TimestampIsUTC)
+	}
+	f.Close()
+}
+
+func TestRFC3164SetTag(t *testing.T) {
+	f := &RFC3164{}
+	tag := "test_tag"
+	f.SetTag(tag)
+
+	if f.Header.Tag != tag {
+		t.Errorf("Set RFC3164 tag should be equal %s for RFC3164Header %s", tag, f.Header.Tag)
+	}
+	f.Close()
+}
+
+func TestRFC3164SetFacility(t *testing.T) {
+	f := &RFC3164{}
+	f.SetFacility(LOG_SYSLOG)
+
+	if f.Facility != LOG_SYSLOG {
+		t.Errorf("Set RFC3164 facility should be equal %d for RFC3164Header %d", LOG_SYSLOG, f.Facility)
+	}
+	f.Close()
 }
 
 func TestRFC3164Formatter(t *testing.T) {

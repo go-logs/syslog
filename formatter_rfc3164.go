@@ -58,12 +58,16 @@ func (f *RFC3164) priority(severity Priority) Priority {
 	return BuildPriority(f.Facility, severity)
 }
 
-// string 
-func (f *RFC3164) headerString(severity Priority) string {
+// header 
+func (f *RFC3164) header() {
 	if f.Header == nil {
 		f.Header = &RFC3164Header{}
 	}
+}
 
+// headerString 
+func (f *RFC3164) headerString(severity Priority) string {
+	f.header()
 	f.Header.hostname()
 	f.Header.tag()
 
@@ -88,6 +92,29 @@ func (f *RFC3164) Close() {
 		}
 		f = nil
 	}
+}
+
+// SetHostname 
+func (f *RFC3164) SetHostname(hn string) {
+	f.header()
+	f.Header.Hostname = hn
+}
+
+// SetTimestampIsUTC 
+func (f *RFC3164) SetTimestampIsUTC(t bool) {
+	f.header()
+	f.Header.TimestampIsUTC = t
+}
+
+// SetTag 
+func (f *RFC3164) SetTag(t string) {
+	f.header()
+	f.Header.Tag = t
+}
+
+// SetFacility 
+func (f *RFC3164) SetFacility(facility Priority) {
+	f.Facility = facility
 }
 
 // RFC3164Formatter provides an RFC 3164 compliant message.
